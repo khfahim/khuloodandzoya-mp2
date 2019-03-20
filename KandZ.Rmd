@@ -123,9 +123,14 @@ j2_dataset
 ```{r}
 j3_dataset <- inner_join(j2_dataset, contributions, by= "cmte_id") 
 j3_dataset <- j3_dataset %>%
-  select(cand_id.x, state.x, incumbent, party, cmte_id, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt)
-j3_dataset%>%
- group_by(cand_id.x) 
+  select(cand_id.x, state.x, incumbent, party, cmte_id, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
+  group_by(cand_id.x) %>%
+  mutate(N= n_distinct(cmte_id))
+j3_dataset
+```
+
+
+  summarize(N= sum(transaction_amt)) 
 ```
 
 
