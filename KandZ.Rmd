@@ -152,12 +152,14 @@ j4_dataset
 
 ```{r}
 j5_dataset <- inner_join(j3_dataset, j4_dataset, by= "cand_id.x")  %>%
-  select(-state.y.x,incumbent.y, party.y, cmte_id.y, state.y.y,cmte_name.y, cand_party_affiliation.y, cand_office.y, cmte_name.y, total_contributions.x) %>%
+  select(cand_id.x, state.x.x, total_contributions.y, total_contributions_state) %>%
   group_by(cand_id.x) %>%
   mutate(percentage_of_contribution=  (total_contributions.y/total_contributions_state)*100)
 j5_dataset
 ```
 
 
+select(-state.y.x,incumbent.y, party.y, cmte_id.y, state.y.y,cmte_name.y, cand_party_affiliation.y, cand_office.y, cmte_name.y, total_contributions.x) %>%
+  group_by(cand_id.x) %>%
 
 
