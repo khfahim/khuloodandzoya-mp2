@@ -124,14 +124,14 @@ j2_dataset
 j3_dataset <- inner_join(j2_dataset, contributions, by= "cmte_id") 
 j3_dataset <- j3_dataset %>%
  select(cand_id.x, state.x, incumbent, party, cmte_id, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
-  group_by(cand_id.x)
-  summarize(N= n_distinct(cmte_name))
+  group_by(cand_id.x) %>% 
+mutate(total_contributions= sum(transaction_amt))
 j3_dataset
 ```
 
 
   summarize(N= sum(transaction_amt)) 
-```
+
 
 
   summarize(N=sum(transaction_amt))
@@ -140,5 +140,24 @@ j3_dataset
 j3_dataset %>%
   group_by(cand_id.x) %>%
   summarize_(N= sum(transaction_amt))
+
+```{r}
+j4_dataset <- j3_dataset %>%
+  group_by(state.x) %>%
+  mutate(total_contributions_state= sum(transaction_amt))
+j4_dataset
 ```
+
+
+
+```{r}
+j5_dataset <- inner_join(j3_dataset, j4_dataset, by= "cand_id.x")  %>%
+  select(-state.y.x,incumbent.y, party.y, cmte_id.y, state.y.y,cmte_name.y, cand_party_affiliation.y, cand_office.y, cmte_name.y, total_contributions.x) %>%
+  group_by(cand_id.x) %>%
+  mutate(percentage_of_contribution=  (total_contributions.y/total_contributions_state)*100)
+j5_dataset
+```
+
+
+
 
