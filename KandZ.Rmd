@@ -104,7 +104,8 @@ j3_dataset <- inner_join(j2_dataset, contributions, by= "cmte_id")
 j3_dataset_total <- j3_dataset %>%
  select(cand_id.x, state.x, incumbent, party, cmte_id, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
   group_by(cand_id.x) %>% 
-summarize(total_contributions= sum(transaction_amt))
+summarize(total_contributions= sum(transaction_amt)) %>%
+  rename(cand_id= cand_id.x)
 j3_dataset_total
 ```
 
@@ -130,8 +131,14 @@ j3_dataset_final
 
 
 ```{r}
+j3_finaldataset <- inner_join(j3_dataset_total, j3_dataset_final, by=  "cand_id")
+j3_finaldataset
+```
+
+
+```{r}
 final_dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
-  select(cand_id, state, incumbent, party, cand_office, meanpc)
+  select(cand_id, state, incumbent, party, cand_office, meanpc) 
 final_dataset
 ```
 
