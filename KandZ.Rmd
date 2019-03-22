@@ -155,7 +155,11 @@ final_dataset3 <- inner_join(final_dataset, final_dataset2, by= "cand_id")
 final_dataset3
 ```
 
-
+```{r}
+final_dataset2 %>%
+  inner_join(j3_finaldataset, by = "cand_id") %>%
+  inner_join(new_house, by = "cand_id")
+```
 
 
 
