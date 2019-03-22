@@ -123,17 +123,16 @@ j3_dataset_final <- inner_join(j3_dataset_total, j3_dataset_state, by= "cand_id.
 select(-transaction_amt) %>%
   group_by(cand_id.x) %>%
   mutate(percentage_contrib= (total_contributions/state.contribution)*100) %>%
-  summarize(mean(percentage_contrib)) %>%
+  summarize(meanpc = mean(percentage_contrib)) %>%
   rename("cand_id"= cand_id.x)
 j3_dataset_final
-f
 ```
 
 
 ```{r}
-Final_Dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
-  select(cand_id, state, incumbent, party, cmte_id, cand_office, mean(percentage_contrib))
-Final_Dataset
+final_dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
+  select(cand_id, state, incumbent, party, cmte_id, cand_office, meanpc)
+final_dataset
 ```
 
 
