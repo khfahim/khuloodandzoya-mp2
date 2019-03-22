@@ -156,26 +156,32 @@ final_dataset3
 ```
 
 ```{r}
-final_dataset2 <- final_dataset2 %>%
+final_dataset_new <- final_dataset2 %>%
   inner_join(j3_finaldataset, by = "cand_id") %>%
   inner_join(new_house, by = "cand_id") 
-final_dataset2
+final_dataset_new
 ```
 
-``` {r}
-final_dataset2 <- final_dataset2 %>%
-  filter(state == "CA")
-final_dataset2
+
+
+```{r}
+final_dataset_new <- final_dataset_new %>%
+  filter(state.x == "CA")
+final_dataset_new
 ```
 
-``` {r}
-final_dataset2 %>%
-  ggplot(aes(x = number_com, y = total_contributions, color = incumbent, size = primary_votes.x)) +
+```{r}
+final_dataset_new %>%
+  ggplot(aes(x = number_com, y = total_contributions.x, color = incumbent.x, size = primary_votes)) +
   geom_point() 
 ```
 
 ```{r}
-final_dataset2 %>%
-  ggplot(aes(x = number_com, y = total_contributions, color = party, size = primary_votes.x)) +
+final_dataset_new %>%
+  ggplot(aes(x = number_com, y = total_contributions.x, color = party.y, size = primary_votes)) +
   geom_point()
 ```
+
+
+
+
