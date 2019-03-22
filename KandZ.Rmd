@@ -52,7 +52,7 @@ MP2_table <- inner_join(new_table, committees, by= "cand_id") %>%
 
 ```{r}
 new_house <- house_elections %>%
-  select(fec_id, state,  incumbent, party) %>%
+  select(fec_id, state,  incumbent, party, primary_votes) %>%
   rename(cand_id= "fec_id")
 new_house 
 ```
@@ -138,7 +138,7 @@ j3_finaldataset
 
 ```{r}
 final_dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
-  select(cand_id, state, incumbent, party, cand_office, meanpc) 
+  select(cand_id, state, incumbent, party, cand_office, meanpc, cmte_id) 
 final_dataset
 ```
 
@@ -156,11 +156,26 @@ final_dataset3
 ```
 
 ```{r}
-final_dataset2 %>%
+final_dataset2 <- final_dataset2 %>%
   inner_join(j3_finaldataset, by = "cand_id") %>%
-  inner_join(new_house, by = "cand_id")
+  inner_join(new_house, by = "cand_id") 
+final_dataset2
 ```
 
+``` {r}
+final_dataset2 <- final_dataset2 %>%
+  filter(state == "CA")
+final_dataset2
+```
 
+``` {r}
+final_dataset2 %>%
+  ggplot(aes(x = number_com, y = total_contributions, color = incumbent, size = primary_votes.x)) +
+  geom_point() 
+```
 
-
+```{r}
+final_dataset2 %>%
+  ggplot(aes(x = number_com, y = total_contributions, color = party, size = primary_votes.x)) +
+  geom_point()
+```
