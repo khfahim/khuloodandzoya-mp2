@@ -124,8 +124,7 @@ select(-transaction_amt) %>%
   group_by(cand_id.x) %>%
   mutate(percentage_contrib= (total_contributions/state.contribution)*100) %>%
   summarize(mean(percentage_contrib)) %>%
-  rename("cand_id"= cand_id.x) %>%
-  rename("percent_contr"= mean(percentage_contrib))
+  rename("cand_id"= cand_id.x)
 j3_dataset_final
 ```
 
