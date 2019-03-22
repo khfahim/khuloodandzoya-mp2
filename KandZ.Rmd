@@ -131,11 +131,22 @@ j3_dataset_final
 
 ```{r}
 final_dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
-  select(cand_id, state, incumbent, party, cmte_id, cand_office, meanpc)
+  select(cand_id, state, incumbent, party, cand_office, meanpc)
 final_dataset
 ```
 
+```{r}
+final_dataset2  <- final_dataset %>%
+  select(cand_id, state, incumbent, party, cmte_id, cand_office, meanpc) %>%
+  group_by(cand_id) %>%
+ summarize(number_com=  n_distinct(cmte_id))
+final_dataset2
+```
 
+```{r}
+final_dataset3 <- inner_join(final_dataset, final_dataset2, by= "cand_id")
+final_dataset3
+```
 
 
 
