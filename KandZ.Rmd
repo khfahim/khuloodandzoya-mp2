@@ -126,6 +126,7 @@ select(-transaction_amt) %>%
   summarize(mean(percentage_contrib)) %>%
   rename("cand_id"= cand_id.x)
 j3_dataset_final
+f
 ```
 
 
