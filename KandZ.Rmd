@@ -8,23 +8,11 @@ output: html_document
 ```{r}
 library(tidyverse)
 library(naniar)
+library("ggthemes")
 load("house_elections.rda")
 load("candidates.rda")
 load("committees.rda")
 load("contributions.rda")
-```
-
-
-```{r}
-first_jim <- candidates %>%
-  filter(cand_id == "H8WA07132")
-```
-
-```{r}
-first_jim <- first_jim %>%
-  select(cand_id, cand_name, cand_party_affiliation, cand_office_state) %>%
-  inner_join(committees, by = "cand_id")
-first_jim
 ```
 
 
@@ -57,7 +45,8 @@ new_table
 
 ```{r}
 contributions <- contributions %>%
-  select(cmte_id, name, state, cand_id, transaction_amt)
+  select(cmte_id, name, state, cand_id, transaction_amt, transaction_type) %>%
+  filter(transaction_type == "24E")
 contributions
 ```
 
@@ -152,7 +141,7 @@ final_dataset_new
 ```
 
 ```{r}
-library("ggthemes")
+
 ```
 
 ```{r}
@@ -165,14 +154,28 @@ final_dataset_new
 ```{r}
 final_dataset_new %>%
   ggplot(aes(x = number_com, y = log_tc, color = incumbent, size = primary_votes)) +
-  geom_point() + geom_jitter() + labs(x= "Number of Committees in the State", y= "Total Contributions (log)", size= "Primary Votes", color= "Incumbent Status", title = "Breakdown by Incumbent Status")+ theme_hc()
+  geom_point() +
+  geom_jitter() +
+  labs(x= "Number of Committees in the State", 
+       y= "Total Contributions (log)", 
+       size= "Primary Votes", 
+       color= "Incumbent Status", 
+       title = "Breakdown by Incumbent Status") + theme_hc()
 ```
 
 ```{r}
 final_dataset_new %>%
   ggplot(aes(x = number_com, y = log_tc, color = party, size = primary_votes)) +
-  geom_point() +labs(x= "Number of Committees in the State", y= "Total Contributions", color= "Party Type", size= "Primary Votes", title = "Breakdown by Party Type") + theme_hc()
+  geom_point() +
+  geom_jitter() +
+  labs(x= "Number of Committees in the State", 
+       y= "Total Contributions", 
+       color= "Party Type", 
+       size= "Primary Votes", 
+       title = "Breakdown by Party Type") + theme_hc()
 ```
+
+
 
 
 
