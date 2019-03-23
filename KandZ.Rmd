@@ -67,7 +67,7 @@ candidates
 
 ```{r}
 joined_dataset <- inner_join(committees, candidates, by= "cand_id")
-joined_dataset t
+joined_dataset
 ```
 
 
@@ -103,31 +103,29 @@ j3_dataset_final <- inner_join(j3_dataset_total, j3_dataset_state, by= "cand_id"
 j3_dataset_final %>%
   group_by(cand_id) %>%
   mutate(percentage_contrib= (total_contributions/state.contribution)*100) %>%
-  arrange(desc(percentage_contrib))
+  arrange((percentage_contrib))
  j3_dataset_final
 ```
   
+  TOP 10 states: CA, FL, AZ, PA, IL, NC, TX, NY, AZ, UT
   
-   summarize(meanpc = mean(percentage_contrib)) 
-j3_dataset_final
-```
-
 
 ```{r}
-j3_finaldataset <- inner_join(j3_dataset_total, j3_dataset_final, by=  "cand_id")
+j3_finaldataset <- inner_join(j3_dataset_total, j3_dataset_final, by=  "cand_id") %>%
+  select(-total_contributions.y) %>%
+  rename("total_contributions"= total_contributions.x)
 j3_finaldataset
 ```
 
-
 ```{r}
 final_dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
-  select(cand_id, state, incumbent, party, cand_office, meanpc, cmte_id) 
+  select(cand_id, state, incumbent, party, cand_office, cmte_id) 
 final_dataset
 ```
 
 ```{r}
 final_dataset2  <- final_dataset %>%
-  select(cand_id, state, incumbent, party, cmte_id, cand_office, meanpc) %>%
+  select(cand_id, state, incumbent, party, cmte_id, cand_office) %>%
   group_by(cand_id) %>%
  summarize(number_com=  n_distinct(cmte_id))
 final_dataset2
@@ -145,9 +143,6 @@ final_dataset_new <- final_dataset2 %>%
 final_dataset_new
 ```
 
-```{r}
-
-```
 
 ```{r}
 final_dataset_new <- final_dataset_new %>% 
