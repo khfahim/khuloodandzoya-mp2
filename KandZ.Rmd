@@ -128,8 +128,9 @@ final_dataset
 ```{r}
 final_dataset2  <- final_dataset %>%
   select(cand_id, state, incumbent, party, cmte_id, cand_office) %>%
+  filter(party == "D", "R")
   group_by(cand_id) %>%
- summarize(number_com=  n_distinct(cmte_id))
+ summarize(number_com =  n_distinct(cmte_id))
 final_dataset2
 ```
 
@@ -175,6 +176,6 @@ final_dataset_new %>%
        color= "Party Type", 
        size= "Primary Votes", 
        title = "Breakdown by Party Type") + theme_hc() +
-  scale_colour_manual(values = c("D" = "#04417A", "R" = "#E22E2F"))
+  scale_color_manual(values = c("D" = "#04417A", "R" = "#E22E2F", "N" = "Black"))
 ```
 
