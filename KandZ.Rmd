@@ -126,6 +126,7 @@ final_dataset
 ```{r}
 final_dataset2  <- final_dataset %>%
   select(cand_id, state, incumbent, party, cmte_id, cand_office) %>%
+   filter(!party== "N", !party== "L", !party== "I", !party== "U", !party== "W") %>%
   group_by(cand_id) %>%
  summarize(number_com=  n_distinct(cmte_id))
 final_dataset2
@@ -139,15 +140,14 @@ final_dataset3
 ```{r}
 final_dataset_new <- final_dataset2 %>%
   inner_join(j3_finaldataset, by = "cand_id") %>%
-  inner_join(new_house, by = "cand_id") 
+  inner_join(new_house, by = "cand_id")
 final_dataset_new
 ```
 
 
 ```{r}
 final_dataset_new <- final_dataset_new %>% 
-  mutate(log_tc= log(total_contributions)) %>%
-  filter(state == "CA")
+  mutate(log_tc= log(total_contributions)) 
 final_dataset_new
 ```
 
