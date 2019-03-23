@@ -48,7 +48,7 @@ new_table
 ```{r}
 contributions <- contributions %>%
   select(cmte_id, name, state, cand_id, transaction_amt, transaction_type) %>%
-  filter(transaction_type == "24E")
+  filter(transaction_type== "24E")
 contributions
 ```
 
@@ -69,7 +69,7 @@ candidates
 
 ```{r}
 joined_dataset <- inner_join(committees, candidates, by= "cand_id")
-joined_dataset
+joined_dataset t
 ```
 
 
@@ -80,32 +80,37 @@ j2_dataset
 
 
 ```{r}
-j3_dataset <- inner_join(j2_dataset, contributions, by= "cmte_id") 
+j3_dataset <- inner_join(j2_dataset, contributions, by= "cand_id")  %>%
+  rename("cmte_id"= cmte_id.x)
 j3_dataset_total <- j3_dataset %>%
- select(cand_id.x, state.x, incumbent, party, cmte_id, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
-  group_by(cand_id.x) %>% 
-summarize(total_contributions= sum(transaction_amt)) %>%
-  rename(cand_id= cand_id.x)
+ select(cand_id, state.x, incumbent, party, cmte_id, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
+  group_by(cand_id) %>%
+summarize(total_contributions= sum(transaction_amt)) 
 j3_dataset_total
 ```
 
 
 ```{r}
 j3_dataset_state <- j3_dataset %>%
-  select(state.x, cand_id.x, transaction_amt) %>%
+  select(state.x, cand_id, transaction_amt) %>%
   group_by(state.x) %>%
-  mutate(state.contribution= sum(transaction_amt)) %>%
-  rename("cand_id"= cand_id.x)
+  mutate(state.contribution= sum(transaction_amt)) 
 j3_dataset_state
 ```
 
 
 ```{r}
 j3_dataset_final <- inner_join(j3_dataset_total, j3_dataset_state, by= "cand_id") %>%
-select(-transaction_amt) %>%
+  select(-transaction_amt)
+j3_dataset_final %>%
   group_by(cand_id) %>%
   mutate(percentage_contrib= (total_contributions/state.contribution)*100) %>%
-  summarize(meanpc = mean(percentage_contrib)) 
+  arrange(desc(percentage_contrib))
+ j3_dataset_final
+```
+  
+  
+   summarize(meanpc = mean(percentage_contrib)) 
 j3_dataset_final
 ```
 
