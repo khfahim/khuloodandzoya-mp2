@@ -158,7 +158,7 @@ library("ggthemes")
 ```{r}
 final_dataset_new <- final_dataset_new %>% 
   mutate(log_tc= log(total_contributions)) %>%
-  filter(state == "AL")
+  filter(state == "CA")
 final_dataset_new
 ```
 
@@ -170,7 +170,7 @@ final_dataset_new %>%
 
 ```{r}
 final_dataset_new %>%
-  ggplot(aes(x = number_com, y = total_contributions, color = party, size = primary_votes)) +
+  ggplot(aes(x = number_com, y = log_tc, color = party, size = primary_votes)) +
   geom_point() +labs(x= "Number of Committees in the State", y= "Total Contributions", color= "Party Type", size= "Primary Votes", title = "Breakdown by Party Type") + theme_hc()
 ```
 
