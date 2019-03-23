@@ -2,7 +2,9 @@
 title: "MP 2"
 author: "Zoya Alam and  Khulood Fahim"
 date: "3/20/2019"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 ```{r}
@@ -141,10 +143,6 @@ final_dataset_new
 ```
 
 ```{r}
-
-```
-
-```{r}
 final_dataset_new <- final_dataset_new %>% 
   mutate(log_tc= log(total_contributions)) %>%
   filter(state == "CA")
@@ -160,7 +158,8 @@ final_dataset_new %>%
        y= "Total Contributions (log)", 
        size= "Primary Votes", 
        color= "Incumbent Status", 
-       title = "Breakdown by Incumbent Status") + theme_hc()
+       title = "Breakdown by Incumbent Status") + theme_hc() +
+  scale_color_manual(values = c("TRUE" = "#B833FF", "FALSE" = "#77FF33"))
 ```
 
 ```{r}
@@ -172,11 +171,7 @@ final_dataset_new %>%
        y= "Total Contributions", 
        color= "Party Type", 
        size= "Primary Votes", 
-       title = "Breakdown by Party Type") + theme_hc()
+       title = "Breakdown by Party Type") + theme_hc() +
+  scale_colour_manual(values = c("D" = "#04417A", "R" = "#E22E2F"))
 ```
-
-
-
-
-
 
