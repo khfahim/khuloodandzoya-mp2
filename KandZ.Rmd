@@ -23,54 +23,45 @@ load("contributions.rda")
 committees <- committees %>%
   select(cmte_id, cmte_name, cmte_state, cand_id) 
 committees
+```
+
 
 # selected desired information from committees dataset
-
+```{r}
 candidates <- candidates %>%
   select(cand_id, cand_name, cand_party_affiliation, cand_office, cand_state)
 candidates
-
+```
 #selected desired information from candidates dataset
 
-new_table <- inner_join(candidates, contributions, by= "cand_id")
-new_table
-
-# joined candidates and contributions tables 
-
-MP2_table <- inner_join(new_table, committees, by= "cand_id") %>%
-  select(cand_id, cand_name, cand_party_affiliation, cand_state, cmte_name, cmte_state)
-MP2_table
-
-# added committees table to the first join and selected desired information
-
-new_house <- house_elections %>%
-  select(fec_id, state,  incumbent, party, primary_votes) %>%
-  rename(cand_id= "fec_id")
-new_house 
-
-# edited house_elections table to select information and rename a variable to make joining possible 
-
-new_table <- inner_join(MP2_table, new_house, by= "cand_id") %>%
-  group_by(cand_name)
-new_table
-
-# joined MP2_table and new_house
-
+```{r}
 contributions <- contributions %>%
   select(cmte_id, name, state, cand_id, transaction_amt, transaction_type) %>%
   filter(!transaction_type == "24A")
 contributions
-
 ```
+
+# joined candidates and contributions tables 
+
+# added committees table to the first join and selected desired information
+
+```{r}
+new_house <- house_elections %>%
+  select(fec_id, state,  incumbent, party, primary_votes) %>%
+  rename(cand_id= "fec_id")
+new_house 
+```
+
+# edited house_elections table to select information and rename a variable to make joining possible 
 
 
 
 ```{r}
 joined_dataset <- inner_join(committees, candidates, by= "cand_id")
 joined_dataset
-
-# joined committees and candidates datasets
 ```
+# joined committees and candidates datasets
+
 
 
 ```{r}
@@ -86,8 +77,10 @@ j3_dataset
 
 ```{r}
 j3_dataset_total <- j3_dataset %>%
- select(cand_id, state.x, incumbent, party, cmte_id.x, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
-  group_by(cand_id) %>% 
+  rename("cmte_id"= cmte_id.x) %>%
+ select(cand_id, state.x, incumbent, party, cmte_id, name, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
+  group_by(cand_id)
+j3_dataset_total %>% 
 summarize(total_contributions= sum(transaction_amt))
 j3_dataset_total
 ```
@@ -97,7 +90,7 @@ j3_dataset_total
 j3_dataset_state <- j3_dataset %>%
   select(state.x, cand_id, transaction_amt) %>%
   group_by(state.x) %>%
-  mutate(state.contribution= sum(transaction_amt)) 
+ mutate(state.contribution= sum(transaction_amt)) 
 j3_dataset_state
 ```
 
@@ -156,7 +149,6 @@ state_function <- function(state_name) {
   final_dataset_new %>% 
   filter(state == state_name)
 }
-
 ```
 
 ```{r}
