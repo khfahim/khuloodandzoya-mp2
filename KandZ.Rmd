@@ -105,15 +105,11 @@ j3_dataset_state
 
 ```{r}
 j3_dataset_final <- inner_join(j3_dataset_total, j3_dataset_state, by= "cand_id") %>%
-  select(-transaction_amt)
-j3_dataset_final %>%
-  group_by(state.x) %>%
+select(-transaction_amt) %>%
+  group_by(cand_id) %>%
   mutate(percentage_contrib= (total_contributions/state.contribution)*100) %>%
-  summarize(avg_percentage= mean(percentage_contrib)) %>%
-  arrange(avg_percentage) %>%
-    head(10) %>%
-  rename("state"= state.x)
- j3_dataset_final
+  summarize(meanpc = mean(percentage_contrib))
+j3_dataset_final
 ```
 
 
