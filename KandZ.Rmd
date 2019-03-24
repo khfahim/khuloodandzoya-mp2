@@ -1,5 +1,5 @@
 ---
-title: "MP 2"
+title: "Examining the Relationship Between Committees, Contributions, Popular Votes: Incumbent Status  and Party Type"
 author: "Zoya Alam and  Khulood Fahim"
 date: "3/20/2019"
 output: 
@@ -25,82 +25,60 @@ load("contributions.rda")
 committees <- committees %>%
   select(cmte_id, cmte_name, cmte_state, cand_id) 
 committees
-```
 
 
 # selected desired information from committees dataset
-```{r}
+
 candidates <- candidates %>%
   select(cand_id, cand_name, cand_party_affiliation, cand_office, cand_state)
 candidates
-```
+
 #selected desired information from candidates dataset
 
-<<<<<<< HEAD
-```{r}
-=======
->>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
+
 contributions <- contributions %>%
   select(cmte_id, name, state, cand_id, transaction_amt, transaction_type) %>%
   filter(!transaction_type == "24A")
 contributions
-<<<<<<< HEAD
-```
 
 # joined candidates and contributions tables 
 
 # added committees table to the first join and selected desired information
-=======
 
 # selected desired information from contributions dataset and filtered out contributions made against candidates
->>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
 
-```{r}
 new_house <- house_elections %>%
   select(fec_id, state,  incumbent, party, primary_votes) %>%
   rename(cand_id= "fec_id")
 new_house 
-```
 
 # edited house_elections table to select information and rename a variable to make joining possible 
 
-<<<<<<< HEAD
-
-
-```{r}
-joined_dataset <- inner_join(committees, candidates, by= "cand_id")
-joined_dataset
-```
-# joined committees and candidates datasets
-
-
-=======
 joined_dataset <- inner_join(committees, candidates, by= "cand_id")
 joined_dataset
 
 # joined committees and candidates datasets
->>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
+
 
 j2_dataset <- inner_join(new_house, joined_dataset, by= "cand_id")
 j2_dataset
 
-# joiened new_house and joined_dataset to add new_house information to the merged candidates and committees dataset
+# joined new_house and joined_dataset to add new_house information to the merged candidates and committees dataset
 
 j3_dataset <- inner_join(j2_dataset, contributions, by= "cand_id") 
 j3_dataset
 
 # added contributions dataset to latest table, merging all four datasets together 
 
+
 j3_dataset_total <- j3_dataset %>%
-<<<<<<< HEAD
   rename("cmte_id"= cmte_id.x) %>%
  select(cand_id, state.x, incumbent, party, cmte_id, name, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
   group_by(cand_id)
-j3_dataset_total %>% 
-=======
- select(cand_id, state.x, incumbent, party, cmte_id.x, cmte_name, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
+j3_dataset_total
+j3_dataset_total <- j3_dataset_total %>% 
+ select(cand_id, transaction_amt) %>%
   group_by(cand_id) %>% 
->>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
 summarize(total_contributions= sum(transaction_amt))
 j3_dataset_total
 
@@ -109,11 +87,7 @@ j3_dataset_total
 j3_dataset_state <- j3_dataset %>%
   select(state.x, cand_id, transaction_amt) %>%
   group_by(state.x) %>%
-<<<<<<< HEAD
- mutate(state.contribution= sum(transaction_amt)) 
-=======
-  mutate(state_contribution = sum(transaction_amt)) 
->>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
+ mutate(state_contribution= sum(transaction_amt)) 
 j3_dataset_state
 
 # calculated total contributions made to all candidates in a state
@@ -121,11 +95,10 @@ j3_dataset_state
 j3_dataset_final <- inner_join(j3_dataset_total, j3_dataset_state, by= "cand_id") %>%
 select(-transaction_amt) %>%
   group_by(cand_id) %>%
-  mutate(percentage_contrib= (total_contributions/state_contribution)*100) %>%
-  summarize(meanpc = mean(percentage_contrib))
+  mutate(percentage_contrib= (total_contributions/state_contribution)*100) 
 j3_dataset_final
-
-# merged information of total and state contributions to calculate for percentage of contributions recieved by each candidate in a state (mean(total_contributions/state.contribution)*100))
+ 
+# merged information of total and state contributions to calculate for average percentage of contributions recieved by each candidate in a state (mean(total_contributions/state.contribution)*100))
 
 j3_finaldataset <- inner_join(j3_dataset_total, j3_dataset_final, by=  "cand_id")
 j3_finaldataset
@@ -133,13 +106,13 @@ j3_finaldataset
 # joined datasets to include total contributions, which is needed for y-axis of plot 
 
 final_dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
-  select(cand_id, state, incumbent, party, cand_office, meanpc, cmte_id) 
+  select(cand_id, state, incumbent, party, cand_office,cmte_id) 
 final_dataset
 
 # created a dataset with information to be used in calculating number of committees contributing to each candidate 
 
 final_dataset2  <- final_dataset %>%
-  select(cand_id, state, incumbent, party, cmte_id, cand_office, meanpc) %>%
+  select(cand_id, state, incumbent, party, cmte_id, cand_office) %>%
   group_by(cand_id) %>%
  summarize(number_com=  n_distinct(cmte_id))
 final_dataset2
@@ -151,30 +124,23 @@ final_dataset_new <- final_dataset2 %>%
   inner_join(j3_finaldataset, by = "cand_id")%>%
   inner_join(new_house, by = "cand_id") %>%
   filter(party %in% parties) %>%
+  rename("total_contributions"=  total_contributions.x) %>%
   mutate(log_tc= log(total_contributions))
 final_dataset_new
 
 # filtered for needed political parties, combined three datasets to join all information needed for visualization. Also created a log of total contributions to spread out y-axis in visualization. 
-```
 
-```{r}
+
 state_function <- function(state_name) {
   final_dataset_new %>% 
   filter(state == state_name)
 }
-<<<<<<< HEAD
-```
-=======
-
 # created a function to enable us to apply code to different states
->>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
 
 cali_set <- state_function(state_name = "CA")
 
 # applied the function and filtered for California as an initial example
-```
 
-```{r}
 set.seed(76)
 cali_set %>%
   ggplot(aes(x = primary_votes, y = log_tc, color = incumbent, size = number_com)) +
@@ -220,15 +186,14 @@ cali_set %>%
 
 ## Part 2: Top Ten States
 
+Calculation of Top Ten States
 ```{r}
-top_calc <- final_dataset_new %>%
-  group_by(state) %>%
-  summarise(meanpc)
-  glimpse(top_calc) %>%
+top_calc <- j3_dataset_final %>%
+  group_by(state.x) %>%
+  summarize(meanpc= mean(percentage_contrib)) %>%
   arrange(meanpc) %>%
   head(10)
 top_calc
-
 ```
 
 
@@ -280,3 +245,9 @@ final_dataset_new %>%
         legend.text = element_text(family = "Century Gothic", size = 8)) +
   facet_wrap(~as.factor(state), scales = "free_x")
 ```
+
+
+
+
+
+
