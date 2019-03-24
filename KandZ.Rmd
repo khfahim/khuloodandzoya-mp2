@@ -12,6 +12,8 @@ library(tidyverse)
 library(naniar)
 library(extrafont)
 library(xkcd)
+library("ggthemes")
+library(ggrepel)
 load("house_elections.rda")
 load("candidates.rda")
 load("committees.rda")
@@ -34,16 +36,24 @@ candidates
 ```
 #selected desired information from candidates dataset
 
+<<<<<<< HEAD
 ```{r}
+=======
+>>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
 contributions <- contributions %>%
   select(cmte_id, name, state, cand_id, transaction_amt, transaction_type) %>%
   filter(!transaction_type == "24A")
 contributions
+<<<<<<< HEAD
 ```
 
 # joined candidates and contributions tables 
 
 # added committees table to the first join and selected desired information
+=======
+
+# selected desired information from contributions dataset and filtered out contributions made against candidates
+>>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
 
 ```{r}
 new_house <- house_elections %>%
@@ -54,6 +64,7 @@ new_house
 
 # edited house_elections table to select information and rename a variable to make joining possible 
 
+<<<<<<< HEAD
 
 
 ```{r}
@@ -63,85 +74,87 @@ joined_dataset
 # joined committees and candidates datasets
 
 
+=======
+joined_dataset <- inner_join(committees, candidates, by= "cand_id")
+joined_dataset
 
-```{r}
+# joined committees and candidates datasets
+>>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
+
 j2_dataset <- inner_join(new_house, joined_dataset, by= "cand_id")
 j2_dataset
-```
 
+# joiened new_house and joined_dataset to add new_house information to the merged candidates and committees dataset
 
-```{r}
 j3_dataset <- inner_join(j2_dataset, contributions, by= "cand_id") 
 j3_dataset
-```
 
-```{r}
+# added contributions dataset to latest table, merging all four datasets together 
+
 j3_dataset_total <- j3_dataset %>%
+<<<<<<< HEAD
   rename("cmte_id"= cmte_id.x) %>%
  select(cand_id, state.x, incumbent, party, cmte_id, name, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
   group_by(cand_id)
 j3_dataset_total %>% 
+=======
+ select(cand_id, state.x, incumbent, party, cmte_id.x, cmte_name, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
+  group_by(cand_id) %>% 
+>>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
 summarize(total_contributions= sum(transaction_amt))
 j3_dataset_total
-```
 
+# calculated total contributions made per candidate 
 
-```{r}
 j3_dataset_state <- j3_dataset %>%
   select(state.x, cand_id, transaction_amt) %>%
   group_by(state.x) %>%
+<<<<<<< HEAD
  mutate(state.contribution= sum(transaction_amt)) 
+=======
+  mutate(state_contribution = sum(transaction_amt)) 
+>>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
 j3_dataset_state
-```
 
+# calculated total contributions made to all candidates in a state
 
-```{r}
 j3_dataset_final <- inner_join(j3_dataset_total, j3_dataset_state, by= "cand_id") %>%
 select(-transaction_amt) %>%
   group_by(cand_id) %>%
-  mutate(percentage_contrib= (total_contributions/state.contribution)*100) %>%
+  mutate(percentage_contrib= (total_contributions/state_contribution)*100) %>%
   summarize(meanpc = mean(percentage_contrib))
 j3_dataset_final
-```
 
+# merged information of total and state contributions to calculate for percentage of contributions recieved by each candidate in a state (mean(total_contributions/state.contribution)*100))
 
-```{r}
 j3_finaldataset <- inner_join(j3_dataset_total, j3_dataset_final, by=  "cand_id")
 j3_finaldataset
-```
 
+# joined datasets to include total contributions, which is needed for y-axis of plot 
 
-```{r}
 final_dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
   select(cand_id, state, incumbent, party, cand_office, meanpc, cmte_id) 
 final_dataset
-```
 
-```{r}
+# created a dataset with information to be used in calculating number of committees contributing to each candidate 
+
 final_dataset2  <- final_dataset %>%
   select(cand_id, state, incumbent, party, cmte_id, cand_office, meanpc) %>%
   group_by(cand_id) %>%
  summarize(number_com=  n_distinct(cmte_id))
 final_dataset2
-```
 
-```{r}
-final_dataset3 <- inner_join(final_dataset, final_dataset2, by= "cand_id")
-final_dataset3
-```
+# calculated number of committees contributing to each candidate 
 
-```{r}
 parties <- c("D", "R")
 final_dataset_new <- final_dataset2 %>%
   inner_join(j3_finaldataset, by = "cand_id")%>%
   inner_join(new_house, by = "cand_id") %>%
-  filter(party %in% target) %>%
+  filter(party %in% parties) %>%
   mutate(log_tc= log(total_contributions))
 final_dataset_new
-```
 
-```{r}
-library("ggthemes")
+# filtered for needed political parties, combined three datasets to join all information needed for visualization. Also created a log of total contributions to spread out y-axis in visualization. 
 ```
 
 ```{r}
@@ -149,10 +162,16 @@ state_function <- function(state_name) {
   final_dataset_new %>% 
   filter(state == state_name)
 }
+<<<<<<< HEAD
 ```
+=======
 
-```{r}
+# created a function to enable us to apply code to different states
+>>>>>>> 1ac33b8cf6b034841930edcd32868f1b401f4436
+
 cali_set <- state_function(state_name = "CA")
+
+# applied the function and filtered for California as an initial example
 ```
 
 ```{r}
@@ -174,9 +193,9 @@ cali_set %>%
         plot.title = element_text(family = "Century Gothic", size = 18),
         legend.title = element_text(family = "Century Gothic", size = 15),
         legend.text = element_text(family = "Century Gothic", size = 8))
-```
 
-```{r}
+# created a scatter plot showing the relationship between the number of primary votes and total contributions for each candidate, in addition to factoring in number of committees contributing to each candidate (mapped to size) and whether or not candidate was an incumbent (mapped to color)
+
 set.seed(76)
 cali_set %>%
   ggplot(aes(x = primary_votes, y = log_tc, color = party, size = number_com)) +
@@ -195,13 +214,28 @@ cali_set %>%
         plot.title = element_text(family = "Century Gothic", size = 18),
         legend.title = element_text(family = "Century Gothic", size = 15),
         legend.text = element_text(family = "Century Gothic", size = 8))
+
+# created a scatter plot showing the relationship between the number of primary votes and total contributions for each candidate, in addition to factoring in number of committees contributing to each candidate (mapped to size) and the part affiliation of each candidate (mapped to color)
 ```
 
 ## Part 2: Top Ten States
 
 ```{r}
+top_calc <- final_dataset_new %>%
+  group_by(state) %>%
+  summarise(meanpc)
+  glimpse(top_calc) %>%
+  arrange(meanpc) %>%
+  head(10)
+top_calc
+
+```
+
+
+```{r}
 top_state <- c("CA", "TX", "FL", "NY", "PA", "NC", "NJ", "GA", "AZ", "MA")
 ```
+
 
 ```{r}
 final_dataset_new %>% 
