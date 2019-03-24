@@ -95,10 +95,9 @@ j3_dataset_total
 
 ```{r}
 j3_dataset_state <- j3_dataset %>%
-  select(state.x, cand_id.x, transaction_amt) %>%
+  select(state.x, cand_id, transaction_amt) %>%
   group_by(state.x) %>%
-  mutate(state.contribution= sum(transaction_amt)) %>%
-  rename("cand_id"= cand_id.x)
+  mutate(state.contribution= sum(transaction_amt)) 
 j3_dataset_state
 ```
 
