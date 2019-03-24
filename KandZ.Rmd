@@ -237,3 +237,26 @@ final_dataset_new %>%
         legend.text = element_text(family = "Century Gothic", size = 8)) +
   facet_wrap(~as.factor(state), scales = "free_x")
 ```
+
+```{r}
+top_votes <- final_dataset_new %>%
+  inner_join(top_state, by = "state") 
+top_votes
+
+top_state <- top_votes %>%
+  group_by(state) %>%
+  summarise(max = max(primary_votes))
+  
+top_cand <- top_votes %>%
+  group_by(cand_id) %>%
+  summarise(max = max(primary_votes))
+
+top_table <- top_cand %>%
+  inner_join(top_state, by = "max") 
+
+top_name <- top_table %>%
+  inner_join(candidates, by = "cand_id") %>%
+  select(-cand_party_affiliation, -cand_office) %>%
+  inner_join(final_dataset_new, by = "cand_id")
+top_name
+```
