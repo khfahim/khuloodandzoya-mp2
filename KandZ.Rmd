@@ -149,17 +149,12 @@ library("ggthemes")
 ```
 
 ```{r}
-filter_state <- function(state_letter){
 final_dataset_new <- final_dataset_new %>% 
   mutate(log_tc= log(total_contributions)) %>%
-  filter(state == state_letter)
+  filter(state == "CA")
 final_dataset_new
-}
 ```
 
-```{r}
-filter_state(state_letter = "CA")
-```
 
 ```{r}
 set.seed(76)
