@@ -18,6 +18,7 @@ load("committees.rda")
 load("contributions.rda")
 ```
 
+## Part 1 : California 
 ```{r}
 new_table <- inner_join(candidates, contributions, by= "cand_id")
 new_table
@@ -198,56 +199,23 @@ final_dataset_new %>%
         legend.text = element_text(family = "Century Gothic", size = 8))
 ```
 
-```{r}
-final_dataset_new <- final_dataset_new %>% 
-  mutate(log_tc= log(total_contributions)) %>%
-  filter(state == "FL")
-final_dataset_new
-
-```
+## Part 2: Top Ten States
 
 ```{r}
-set.seed(76)
-final_dataset_new %>%
-  ggplot(aes(x = primary_votes, y = log_tc, color = incumbent, size = number_com)) +
-  geom_point(alpha = 0.5) +
-  geom_jitter() +
-  labs(x= "Number of Primary Votes", 
-       y= "Total Contributions (log)", 
-       size= "Number of Committees", 
-       color= "Incumbent Status", 
-       title = "Votes and Contributions by Incumbent Status") + theme_minimal()+
-  scale_color_manual(values = c("TRUE" = "#B833FF", "FALSE" = "#77FF33")) +
-  theme (axis.title.y = element_text(family = "Century Gothic", size = 15), 
-        axis.title.x = element_text(family = "Century Gothic", size = 15),
-        axis.text.y = element_text(family = "Century Gothic", size = 8), 
-        axis.text.x = element_text(family = "Century Gothic", size = 8),
-        plot.title = element_text(family = "Century Gothic", size = 18),
-        legend.title = element_text(family = "Century Gothic", size = 15),
-        legend.text = element_text(family = "Century Gothic", size = 8))
+top_states <- inner_join(j3_dataset_total, j3_dataset_state, by= "cand_id") %>%
+  select(-transaction_amt) %>%
+  inner_join(new_table2, by = "cand_id") 
+top_states
+
+top_states <- top_states %>%
+  group_by(state.x) %>%
+  mutate(percentage_contrib= (total_contributions/state.contribution)*100) %>%
+  summarize(avg_percentage= mean(percentage_contrib)) %>%
+  arrange(avg_percentage) %>%
+    head(10) %>%
+  rename("state"= state.x)
+
+ top_states
 ```
 
-```{r}
-set.seed(76)
-final_dataset_new %>%
-  ggplot(aes(x = primary_votes, y = log_tc, color = party, size = number_com)) +
-  geom_point() +
-  geom_jitter() +
-  labs(x= "Number of Primary Votes", 
-       y= "Total Contributions (log)", 
-       color= "Party Type", 
-       size= "Number of Committees", 
-       title = "Votes and Contributions by Party") + theme_minimal() +
-  scale_color_manual(values = c("D" = "#04417A", "R" = "#E22E2F", "N" = "Black")) +
-  theme (axis.title.y = element_text(family = "Century Gothic", size = 15), 
-        axis.title.x = element_text(family = "Century Gothic", size = 15),
-        axis.text.y = element_text(family = "Century Gothic", size = 8), 
-        axis.text.x = element_text(family = "Century Gothic", size = 8),
-        plot.title = element_text(family = "Century Gothic", size = 18),
-        legend.title = element_text(family = "Century Gothic", size = 15),
-        legend.text = element_text(family = "Century Gothic", size = 8))
-```
 
-```{r}
-filter_state(state_letter = "FL")
-```
