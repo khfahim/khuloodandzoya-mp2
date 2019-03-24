@@ -10,28 +10,27 @@ output:
 ```{r}
 library(tidyverse)
 library(naniar)
-library("ggthemes")
+library(extrafont)
+library(xkcd)
 load("house_elections.rda")
 load("candidates.rda")
 load("committees.rda")
 load("contributions.rda")
 ```
 
-
-```{r joined candidates and contributions tables}
+```{r}
 new_table <- inner_join(candidates, contributions, by= "cand_id")
 new_table
 ```
 
 
-```{r joined committees and selected for desired columns}
+```{r}
 MP2_table <- inner_join(new_table, committees, by= "cand_id") %>%
   select(cand_id, cand_name, cand_party_affiliation, cand_state, cmte_name, cmte_state, connected_org_name)
-MP2_table
 ```
 
 
-```{r edited house_elections dataset for desired columns}
+```{r}
 new_house <- house_elections %>%
   select(fec_id, state,  incumbent, party, primary_votes) %>%
   rename(cand_id= "fec_id")
@@ -39,142 +38,222 @@ new_house
 ```
 
 
-```{r joined previous tables}
-add_house <- inner_join(MP2_table, new_house, by= "cand_id") %>%
+```{r}
+new_table <- inner_join(MP2_table, new_house, by= "cand_id") %>%
   group_by(cand_name)
-add_house
+new_table
 ```
 
 
-```{r edited contributions for desired columns}
+```{r}
 contributions <- contributions %>%
   select(cmte_id, name, state, cand_id, transaction_amt, transaction_type) %>%
-  filter(transaction_type== "24E")
+  filter(!transaction_type == "24A")
 contributions
 ```
 
 
-```{r edited committees for desired columns}
+```{r}
 committees %>%
   select(cmte_id, cmte_name, cmte_state, cand_id) 
 committees
 ```
 
 
-```{r edited candidates for desired columns}
+```{r}
 candidates <- candidates %>%
   select(cand_id, cand_name, cand_party_affiliation, cand_office)
 candidates
 ```
 
 
-```{r joining committees and candidates}
+```{r}
 joined_dataset <- inner_join(committees, candidates, by= "cand_id")
 joined_dataset
 ```
 
 
-```{r joining new_house}
+```{r}
 j2_dataset <- inner_join(new_house, joined_dataset, by= "cand_id")
 j2_dataset
 ```
 
 
-```{r joining contributions to previous information}
-j3_dataset <- inner_join(j2_dataset, contributions, by= "cand_id")  %>%
-  rename("cmte_id"= cmte_id.x)
+```{r}
+j3_dataset <- inner_join(j2_dataset, contributions, by= "cand_id") 
+j3_dataset
 ```
 
-```{r finding total contributions for each candidate}
+```{r}
 j3_dataset_total <- j3_dataset %>%
- select(cand_id, state.x, incumbent, party, cmte_id, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
-  group_by(cand_id) %>%
-summarize(total_contributions= sum(transaction_amt)) 
+ select(cand_id, state.x, incumbent, party, cmte_id.x, cmte_name, cmte_party_affiliation, cand_party_affiliation, cand_office, state.y, transaction_amt) %>%
+  group_by(cand_id) %>% 
+summarize(total_contributions= sum(transaction_amt))
 j3_dataset_total
 ```
 
 
-```{r added column for total contributions in the state}
+```{r}
 j3_dataset_state <- j3_dataset %>%
-  select(state.x, cand_id, transaction_amt) %>%
+  select(state.x, cand_id.x, transaction_amt) %>%
   group_by(state.x) %>%
-  mutate(state.contribution= sum(transaction_amt)) 
+  mutate(state.contribution= sum(transaction_amt)) %>%
+  rename("cand_id"= cand_id.x)
 j3_dataset_state
 ```
 
 
-```{r joined datasets}
+```{r}
 j3_dataset_final <- inner_join(j3_dataset_total, j3_dataset_state, by= "cand_id") %>%
-  select(-transaction_amt)
-```
-
-```{r finding percentage of contributions to candidates relative to total contributions in the state, and arranging to find top 10 states }
-j3_dataset_final %>%
+select(-transaction_amt) %>%
   group_by(cand_id) %>%
-  summarise(percentage_contrib= (total_contributions/state.contribution)*100) %>%
-  arrange(percentage_contrib)
- j3_dataset_final
+  mutate(percentage_contrib= (total_contributions/state.contribution)*100) %>%
+  summarize(meanpc = mean(percentage_contrib)) 
+j3_dataset_final
 ```
-  
-  TOP 10 states: CA, FL, AZ, PA, IL, NC, TX, NY, AZ, UT
 
 
-```{r dataset with information on state, party, office, and committees pertaining to each candidate}
+```{r}
+j3_finaldataset <- inner_join(j3_dataset_total, j3_dataset_final, by=  "cand_id")
+j3_finaldataset
+```
+
+
+```{r}
 final_dataset <- inner_join(j2_dataset, j3_dataset_final, by= "cand_id") %>%
-  select(cand_id, state, incumbent, party, cand_office, cmte_id) 
+  select(cand_id, state, incumbent, party, cand_office, meanpc, cmte_id) 
 final_dataset
 ```
 
-```{r found number of committees for each candidate}
+```{r}
 final_dataset2  <- final_dataset %>%
-  select(cand_id, state, incumbent, party, cmte_id, cand_office) %>%
+  select(cand_id, state, incumbent, party, cmte_id, cand_office, meanpc) %>%
   group_by(cand_id) %>%
- summarize(number_com =  n_distinct(cmte_id))
+ summarize(number_com=  n_distinct(cmte_id))
 final_dataset2
 ```
 
-```{r added committee number column to final_dataset to create final_dataset3}
+```{r}
 final_dataset3 <- inner_join(final_dataset, final_dataset2, by= "cand_id")
 final_dataset3
 ```
 
-```{r added information on contribution amounts}
+```{r}
 final_dataset_new <- final_dataset2 %>%
   inner_join(j3_finaldataset, by = "cand_id") %>%
-  inner_join(new_house, by = "cand_id")
+  inner_join(new_house, by = "cand_id") 
 final_dataset_new
 ```
 
-```{r filtered for California and changed total_contributions to a log}
+```{r}
+library("ggthemes")
+```
+
+```{r}
+filter_state <- function(state_letter){
 final_dataset_new <- final_dataset_new %>% 
   mutate(log_tc= log(total_contributions)) %>%
-  filter(state == "CA")
+  filter(state == state_letter)
 final_dataset_new
+}
 ```
 
 ```{r}
+filter_state(state_letter = "CA")
+```
+
+```{r}
+set.seed(76)
 final_dataset_new %>%
-  ggplot(aes(x = number_com, y = log_tc, color = incumbent, size = primary_votes)) +
-  geom_point() +
+  ggplot(aes(x = primary_votes, y = log_tc, color = incumbent, size = number_com)) +
+  geom_point(alpha = 0.5) +
   geom_jitter() +
-  labs(x= "Number of Committees in the State", 
+  labs(x= "Number of Primary Votes", 
        y= "Total Contributions (log)", 
-       size= "Primary Votes", 
+       size= "Number of Committees", 
        color= "Incumbent Status", 
-       title = "Breakdown by Incumbent Status") + theme_hc() +
-  scale_color_manual(values = c("TRUE" = "#B833FF", "FALSE" = "#77FF33"))
+       title = "Votes and Contributions by Incumbent Status") + theme_minimal()+
+  scale_color_manual(values = c("TRUE" = "#B833FF", "FALSE" = "#77FF33")) +
+  theme (axis.title.y = element_text(family = "Century Gothic", size = 15), 
+        axis.title.x = element_text(family = "Century Gothic", size = 15),
+        axis.text.y = element_text(family = "Century Gothic", size = 8), 
+        axis.text.x = element_text(family = "Century Gothic", size = 8),
+        plot.title = element_text(family = "Century Gothic", size = 18),
+        legend.title = element_text(family = "Century Gothic", size = 15),
+        legend.text = element_text(family = "Century Gothic", size = 8))
 ```
 
 ```{r}
+set.seed(76)
 final_dataset_new %>%
-  ggplot(aes(x = number_com, y = log_tc, color = party, size = primary_votes)) +
+  ggplot(aes(x = primary_votes, y = log_tc, color = party, size = number_com)) +
   geom_point() +
   geom_jitter() +
-  labs(x= "Number of Committees in the State", 
-       y= "Total Contributions", 
+  labs(x= "Number of Primary Votes", 
+       y= "Total Contributions (log)", 
        color= "Party Type", 
-       size= "Primary Votes", 
-       title = "Breakdown by Party Type") + theme_hc() +
-  scale_color_manual(values = c("D" = "#04417A", "R" = "#E22E2F", "N" = "Black"))
+       size= "Number of Committees", 
+       title = "Votes and Contributions by Party") + theme_minimal() +
+  scale_color_manual(values = c("D" = "#04417A", "R" = "#E22E2F", "N" = "Black")) +
+  theme (axis.title.y = element_text(family = "Century Gothic", size = 15), 
+        axis.title.x = element_text(family = "Century Gothic", size = 15),
+        axis.text.y = element_text(family = "Century Gothic", size = 8), 
+        axis.text.x = element_text(family = "Century Gothic", size = 8),
+        plot.title = element_text(family = "Century Gothic", size = 18),
+        legend.title = element_text(family = "Century Gothic", size = 15),
+        legend.text = element_text(family = "Century Gothic", size = 8))
 ```
 
+```{r}
+final_dataset_new <- final_dataset_new %>% 
+  mutate(log_tc= log(total_contributions)) %>%
+  filter(state == "FL")
+final_dataset_new
+
+```
+
+```{r}
+set.seed(76)
+final_dataset_new %>%
+  ggplot(aes(x = primary_votes, y = log_tc, color = incumbent, size = number_com)) +
+  geom_point(alpha = 0.5) +
+  geom_jitter() +
+  labs(x= "Number of Primary Votes", 
+       y= "Total Contributions (log)", 
+       size= "Number of Committees", 
+       color= "Incumbent Status", 
+       title = "Votes and Contributions by Incumbent Status") + theme_minimal()+
+  scale_color_manual(values = c("TRUE" = "#B833FF", "FALSE" = "#77FF33")) +
+  theme (axis.title.y = element_text(family = "Century Gothic", size = 15), 
+        axis.title.x = element_text(family = "Century Gothic", size = 15),
+        axis.text.y = element_text(family = "Century Gothic", size = 8), 
+        axis.text.x = element_text(family = "Century Gothic", size = 8),
+        plot.title = element_text(family = "Century Gothic", size = 18),
+        legend.title = element_text(family = "Century Gothic", size = 15),
+        legend.text = element_text(family = "Century Gothic", size = 8))
+```
+
+```{r}
+set.seed(76)
+final_dataset_new %>%
+  ggplot(aes(x = primary_votes, y = log_tc, color = party, size = number_com)) +
+  geom_point() +
+  geom_jitter() +
+  labs(x= "Number of Primary Votes", 
+       y= "Total Contributions (log)", 
+       color= "Party Type", 
+       size= "Number of Committees", 
+       title = "Votes and Contributions by Party") + theme_minimal() +
+  scale_color_manual(values = c("D" = "#04417A", "R" = "#E22E2F", "N" = "Black")) +
+  theme (axis.title.y = element_text(family = "Century Gothic", size = 15), 
+        axis.title.x = element_text(family = "Century Gothic", size = 15),
+        axis.text.y = element_text(family = "Century Gothic", size = 8), 
+        axis.text.x = element_text(family = "Century Gothic", size = 8),
+        plot.title = element_text(family = "Century Gothic", size = 18),
+        legend.title = element_text(family = "Century Gothic", size = 15),
+        legend.text = element_text(family = "Century Gothic", size = 8))
+```
+
+```{r}
+filter_state(state_letter = "FL")
+```
